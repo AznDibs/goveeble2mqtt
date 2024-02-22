@@ -24,6 +24,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.color import value_to_brightness
 from homeassistant.util.color import brightness_to_value
 from homeassistant.helpers.area_registry import async_get as async_get_area_registry
+from homeassistant.helpers.device_registry import async_get as async_get_device_registry
 
 from .const import DOMAIN
 from .models import LedCommand, LedMode, ModelInfo
@@ -63,7 +64,7 @@ async def async_setup_entry(
 
         if area:
             # Now you have an area, ensure the device is associated with it
-            device_registry = await hass.helpers.device_registry.async_get_registry()
+            device_registry = await async_get_device_registry(hass)
             device = device_registry.async_get_device(identifiers={(DOMAIN, address)})
 
             if device:
