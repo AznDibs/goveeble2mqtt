@@ -64,7 +64,6 @@ class GoveeBluetoothController:
         _LOGGER.debug("Received update request for %s", light.debug_name)
         async with self._lock:
             if light not in self._queued_or_processing_lights:
-                self._queued_or_processing_lights.add(light)
                 self._hass.async_create_task(self._add_task(light))
             else:
                 _LOGGER.debug("Light %s is already queued or processing", light.debug_name)
