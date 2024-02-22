@@ -1,3 +1,5 @@
+"""Controller for Govee BLE lights."""
+
 from __future__ import annotations
 import homeassistant.util.dt as dt_util
 from homeassistant.core import HomeAssistant
@@ -6,17 +8,20 @@ import asyncio
 from bleak import BleakClient
 import random
 
-import logging
-_LOGGER = logging.getLogger(__name__)
 
 from .light import HACSGoveeBleLight
 
+import logging
+_LOGGER = logging.getLogger(__name__)
 UUID_CONTROL_CHARACTERISTIC = '00010203-0405-0607-0809-0a0b0c0d2b11'
 
 
 
 class GoveeBluetoothController:
+    """Controller for Govee BLE lights."""
+
     def __init__(self, hass: HomeAssistant, address: str) -> None:
+        """Initialize the controller."""
         self._hass = hass
         self._address = address
         # Config attributes
@@ -127,7 +132,7 @@ class GoveeBluetoothController:
 
 
     async def _async_process_light_update(self, light: HACSGoveeBleLight):
-        """Manages sending packets to a light with retry and keep-alive logic."""
+        """Manage sending packets to a light with retry and keep-alive logic."""
         attempt = 0
         light.set_state_attr("send_packet_attempts", attempt)
         while attempt < self._MAX_RECONNECT_ATTEMPTS:
@@ -244,7 +249,7 @@ class GoveeBluetoothController:
     async def _async_send_data(self, light: HACSGoveeBleLight, cmd, payload):
         """Send data to a light."""
         if not isinstance(cmd, int):
-            raise ValueError('Invalid command')
+            raise TypeError('Invalid command')
         if not isinstance(payload, bytes) and not (isinstance(payload, list) and all(isinstance(x, int) for x in payload)):
             raise ValueError('Invalid payload')
         if len(payload) > 17:

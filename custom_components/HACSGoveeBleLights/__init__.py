@@ -1,19 +1,15 @@
+"""The HACS Govee BLE Lights integration."""
 from __future__ import annotations
-
-import logging
-_LOGGER = logging.getLogger(__name__)
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.const import CONF_ADDRESS, CONF_MODEL, CONF_NAME, Platform
-from homeassistant.helpers.device_registry import async_get as async_get_device_registry
-
 import yaml
-
-from .const import DOMAIN, DEVICE_SCHEMA, CONFIG_SCHEMA
-
+from .const import DOMAIN
 from .govee_controller import GoveeBluetoothController
+import logging
+_LOGGER = logging.getLogger(__name__)
 
 PLATFORMS: list[Platform] = [
     Platform.SENSOR,
@@ -35,24 +31,15 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     if config_file:
         path = hass.config.path(config_file)
         try:
-            with open(path, 'r') as file:
+            with open(path) as file:
                 device_config = yaml.safe_load(file)
                 devices = device_config.get('devices', [])
 
-                for device in devices:
+                for _device in devices:
                     address = device_config[CONF_ADDRESS]
                     model = device_config.get(CONF_MODEL)
                     name = device_config.get(CONF_NAME)
                     area = device_config.get('area')
-
-                    # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
-                    hass.async_create_task(
-                        hass.config_entries.flow.async_init(
-                            DOMAIN,
-                            context={'source': SOURCE_IMPORT},
-                            data={'address': address, 'model': model, 'name': name, 'area': area}
-                        )
-                    )
 
                     # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
                     hass.async_create_task(

@@ -1,10 +1,10 @@
+"""Support for Govee BLE lights."""
 from __future__ import annotations
 import math
 import asyncio
 import logging
 import random
 
-_LOGGER = logging.getLogger(__name__)
 
 import time
 import bleak_retry_connector
@@ -20,7 +20,6 @@ from homeassistant.components.light import (
     LightEntity)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity import DeviceInfo
-from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.color import value_to_brightness
 from homeassistant.util.color import brightness_to_value
@@ -30,11 +29,13 @@ from .const import DOMAIN
 from .models import LedCommand, LedMode, ModelInfo
 from .kelvin_rgb import kelvin_to_rgb
 
+_LOGGER = logging.getLogger(__name__)
 UUID_CONTROL_CHARACTERISTIC = '00010203-0405-0607-0809-0a0b0c0d2b11'
 
 PARALLEL_UPDATES = 1
 
 def clamp(value, min_value, max_value):
+    """Clamp value to be between min_value and max_value."""
     return max(min(value, max_value), min_value)
 
 async def async_setup_entry(
@@ -83,6 +84,8 @@ async def async_setup_entry(
             )])
 
 class HACSGoveeBleLight(LightEntity):
+    """Representation of a Govee BLE light."""
+
     MAX_RECONNECT_ATTEMPTS = 5
     INITIAL_RECONNECT_DELAY = 1 # seconds
 
@@ -144,39 +147,48 @@ class HACSGoveeBleLight(LightEntity):
 
     @property
     def name(self):
+        """Return the name of the light."""
         return self._name
 
     @property
     def mac_address(self):
+        """Return the mac address of the light."""
         return self._mac
 
     @property
     def debug_name(self):
+        """Return the name of the light."""
         return f"{self.name} ({self.mac_address})"
 
     @property
     def model(self):
+        """Return the model of the light."""
         return self._model
 
     @property
     def ble_device(self) -> BLEDevice:
+        """Return the BLE device."""
         return self._ble_device
 
     @property
     def reconnect(self):
+        """Return the reconnect attempts."""
         return self._reconnect
 
     @reconnect.setter
     def reconnect(self, reconnect):
+        """Set the reconnect attempts."""
         self._reconnect = reconnect
         self._attr_extra_state_attributes["reconnect_attempts"] = reconnect
 
     @property
     def client(self) -> BleakClient | None:
+        """Return the client."""
         return self._client
 
     @client.setter
     def client(self, client):
+        """Set the client."""
         self._client = client
         self._attr_extra_state_attributes["connection_status"] = "Connected" if client is not None and client.is_connected else "Disconnected"
 
@@ -187,10 +199,12 @@ class HACSGoveeBleLight(LightEntity):
 
     @property
     def brightness(self) -> int | None:
+        """Return the brightness of this light between 0..255."""
         return value_to_brightness(self._BRIGHTNESS_SCALE, self._brightness)
 
     @property
     def rgb_color(self):
+        """Return the color of the light."""
         return self._rgb_color or [0,0,0]
 
     @property
@@ -213,6 +227,7 @@ class HACSGoveeBleLight(LightEntity):
         )
 
     def set_state_attr(self, attr, value):
+        """Set the state attribute."""
         self._attr_extra_state_attributes[attr] = value
 
     async def async_added_to_hass(self):
@@ -229,6 +244,7 @@ class HACSGoveeBleLight(LightEntity):
             _LOGGER.debug("Cancelled keep alive task for %s", self.name)
 
     def _mark_dirty(self, property_name, value, dirty=True):
+        """Mark the property as dirty."""
         setattr(self, f"_dirty_{property_name}", dirty)
         self.set_state_attr(f"dirty_{property_name}", dirty)
         if dirty:
@@ -236,10 +252,12 @@ class HACSGoveeBleLight(LightEntity):
             # Notify controller that light has pending updates
 
     def mark_clean(self, property_name):
+        """Mark the property as clean."""
         setattr(self, f"_dirty_{property_name}", False)
         self.set_state_attr(f"dirty_{property_name}", False)
 
     async def async_turn_on(self, **kwargs) -> None:
+        """Turn the light on."""
         _LOGGER.debug(
             "async turn on %s %s with %s",
             self.name,
@@ -301,6 +319,7 @@ class HACSGoveeBleLight(LightEntity):
 
 
     async def async_turn_off(self, **kwargs) -> None:
+        """Turn the light off."""
         if False and self._keep_alive_task:
             self._keep_alive_task.cancel()
             _LOGGER.debug("Cancelled keep alive task for %s", self.name)
@@ -313,6 +332,7 @@ class HACSGoveeBleLight(LightEntity):
 
     # should return cmd and payload
     def get_power_payload(self) -> tuple[int, list[int]]:
+        """Get the power state payload."""
         payload = 0x1 if self._temp_state else 0x0
         self.set_state_attr("power_data", payload)
         return LedCommand.POWER, [payload]
@@ -329,6 +349,7 @@ class HACSGoveeBleLight(LightEntity):
         return False
 
     def get_brightness_payload(self) -> tuple[int, list[int]]:
+        """Get the brightness payload."""
         payload = self._temp_brightness
         self.set_state_attr("brightness_data", payload)
         return LedCommand.BRIGHTNESS, [payload]
@@ -346,6 +367,7 @@ class HACSGoveeBleLight(LightEntity):
         return False
 
     def get_rgb_color_payload(self) -> tuple[int, list[int]]:
+        """Get the RGB color payload."""
         payload = [ModelInfo.get_led_mode(self.model)]
         self.set_state_attr("rgb_color_data", payload)
 
@@ -369,6 +391,7 @@ class HACSGoveeBleLight(LightEntity):
         return LedCommand.COLOR, payload
 
     async def _send_rgb_color(self, red, green, blue):
+        """Send the RGB color to the device."""
         _packet = [ModelInfo.get_led_mode(self.model)]
         self._attr_extra_state_attributes["rgb_color_data"] = [red, green, blue]
 
@@ -562,7 +585,7 @@ class HACSGoveeBleLight(LightEntity):
 
     async def _send_bluetooth_data(self, cmd, payload):
         if not isinstance(cmd, int):
-            raise ValueError('Invalid command')
+            raise TypeError('Invalid command')
         if not isinstance(payload, bytes) and not (isinstance(payload, list) and all(isinstance(x, int) for x in payload)):
             raise ValueError('Invalid payload')
         if len(payload) > 17:

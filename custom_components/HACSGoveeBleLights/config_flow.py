@@ -1,3 +1,5 @@
+"""Config flow for HACS Govee BLE Lights integration."""
+
 from __future__ import annotations
 from typing import Any
 import voluptuous as vol
@@ -6,7 +8,6 @@ from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import CONF_ADDRESS, CONF_MODEL, CONF_NAME
 from homeassistant.components.bluetooth import BluetoothServiceInfoBleak, async_discovered_service_info
 from homeassistant.data_entry_flow import FlowResult
-from homeassistant.helpers import area_registry
 
 
 from .const import DOMAIN
@@ -14,6 +15,8 @@ from .models import ModelInfo
 
 
 class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for Govee BLE Lights."""
+
     VERSION = 1
 
 

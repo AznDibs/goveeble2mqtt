@@ -1,3 +1,4 @@
+"""Constants for HACS Govee Ble Lights."""
 import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 from homeassistant.const import CONF_ADDRESS, CONF_NAME, CONF_MODEL
@@ -14,6 +15,6 @@ DEVICE_SCHEMA = vol.Schema({
 
 CONFIG_SCHEMA = vol.Schema({
     DOMAIN: vol.Schema({
-        vol.Optional('devices'): vol.All(cv.ensure_list, [DEVICE_SCHEMA]),
+        vol.Optional('config_file'): cv.string,
     }),
 }, extra=vol.ALLOW_EXTRA)

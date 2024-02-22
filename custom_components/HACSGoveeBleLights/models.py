@@ -1,3 +1,4 @@
+"""Models for Govee BLE lights."""
 from enum import IntEnum
 
 class LedCommand(IntEnum):
@@ -21,6 +22,8 @@ class LedMode(IntEnum):
 
 
 class ControlMode(IntEnum):
+    """The mode in which a color change happens in."""
+
     COLOR       = 0x01
     TEMPERATURE = 0x02
 
@@ -38,8 +41,10 @@ class ModelInfo:
 
     @staticmethod
     def get_led_mode(model):
+        """Get the LED mode for a given model."""
         return ModelInfo.MODELS.get(model, ModelInfo.MODELS["default"])[0]
 
     @staticmethod
     def get_brightness_max(model):
+        """Get the maximum brightness for a given model."""
         return ModelInfo.MODELS.get(model, ModelInfo.MODELS["default"])[1]

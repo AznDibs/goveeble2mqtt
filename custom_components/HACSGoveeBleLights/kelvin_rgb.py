@@ -1,5 +1,7 @@
-# from https://github.com/wez/govee-py/blob/main/govee_led_wez/kelvin_rgb.py
+"""Convert a color temperature in kelvin to an RGB value.
 
+# from https://github.com/wez/govee-py/blob/main/govee_led_wez/kelvin_rgb.py
+"""
 import math
 
 
@@ -12,6 +14,7 @@ def kelvin_to_rgb(
     kelvin: int,
 ) -> tuple[int, int, int]:
     """Compute an rgb value corresponding to a color temperature in kelvin.
+
     Uses an approximation based on:
     http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/.
     """

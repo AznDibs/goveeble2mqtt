@@ -1,1 +1,1 @@
-# dummy init file for testing
+"""HACS Govee Ble Lights."""
