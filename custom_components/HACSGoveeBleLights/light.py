@@ -47,7 +47,6 @@ async def async_setup_entry(
     controller = hass.data[DOMAIN][entry.entry_id]['controller']
     ble_device = hass.data[DOMAIN][entry.entry_id]['ble_device']
     address = hass.data[DOMAIN][entry.entry_id]['address']
-    hub_device = hass.data[DOMAIN][entry.entry_id]['hub_device']
 
     light = hass.data[DOMAIN][entry.entry_id]
 
@@ -81,7 +80,6 @@ async def async_setup_entry(
             ble_device,
             entry,
             controller=controller,
-            hub_device=hub_device,
             )])
 
 class HACSGoveeBleLight(LightEntity):
@@ -106,13 +104,11 @@ class HACSGoveeBleLight(LightEntity):
             ble_device: BLEDevice,
             config_entry: ConfigEntry,
             controller,
-            hub_device,
             ) -> None:
         """Initialize an bluetooth light."""
         _LOGGER.debug("Config entry data: %s", config_entry.data)
         self._hass = hass
         self._mac = address
-        self._hub_device = hub_device
         self._model = config_entry.data.get("model", "default")
         self._name = config_entry.data.get("name", self._model + "-" + self._mac.replace(":", "")[-4:])
         self._ble_device = ble_device
@@ -214,7 +210,6 @@ class HACSGoveeBleLight(LightEntity):
             manufacturer="Govee",
             model=self._model,
             serial_number=self.mac_address,
-            via_device= (DOMAIN, self._hub_device.identifiers.unique_id),
         )
 
     def set_state_attr(self, attr, value):

@@ -16,6 +16,7 @@ PLATFORMS: list[Platform] = [
     Platform.SENSOR,
     Platform.BINARY_SENSOR,
     Platform.SWITCH,
+    Platform.LIGHT,
 ]
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -72,20 +73,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not ble_device:
         raise ConfigEntryNotReady(f"Could not find LED BLE device with address {address}")
 
-    device_registry = async_get_device_registry(hass)
-    hub_device = device_registry.async_get_or_create(
-        config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, "controller")},
-        name="Govee Controller",
-        manufacturer="AznDibs",
-    )
 
     # Store BLE device and other relevant info in hass.data for use in the platform setup.
     hass.data[DOMAIN][entry.entry_id] = {
         "ble_device": ble_device,
         "address": address,
         "controller": controller,  # Store the controller for use in platform setup.
-        "hub_device": hub_device,
     }
 
 
