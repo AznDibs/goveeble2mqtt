@@ -222,6 +222,10 @@ class HACSGoveeBleLight(LightEntity):
             self._keep_alive_task.cancel()
             _LOGGER.debug("Cancelled keep alive task for %s", self.name)
 
+    def is_dirty(self):
+        """Return if the light is dirty."""
+        return self._dirty_state or self._dirty_brightness or self._dirty_rgb_color
+
     def _mark_dirty(self, property_name, value, dirty=True):
         """Mark the property as dirty."""
         setattr(self, f"_dirty_{property_name}", dirty)
