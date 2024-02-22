@@ -122,14 +122,20 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
 
     async def async_step_import(self, import_data: dict[str, Any]) -> FlowResult:
         """Handle a flow initiated by an import from configuration.yaml."""
-        address = import_data[CONF_ADDRESS]
+        address = import_data["address"]
+        if address is None:
+            return self.async_abort(reason="no_address")
+        if address in self._async_current_ids():
+            return self.async_abort(reason="already_configured")
+
+
         # Use the address as a unique ID for this device
         await self.async_set_unique_id(address)
         self._abort_if_unique_id_configured()
 
         # Extract the model and name from the import data, applying defaults if necessary
-        model = import_data.get(CONF_MODEL, "default_model")
-        name = import_data.get(CONF_NAME, f"Govee Light {address}")
+        model = import_data.get("model", "default_model")
+        name = import_data.get("name", f"Govee Light {address}")
         area = import_data.get("area", None)
         title = name or f"Govee Light {address}"
         # Proceed to create the entry with the imported data
