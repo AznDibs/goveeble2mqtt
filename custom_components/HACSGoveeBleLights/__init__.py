@@ -4,10 +4,11 @@ from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
-from homeassistant.const import CONF_ADDRESS, Platform
-from homeassistant.helpers.device_registry import async_get
+from homeassistant.const import CONF_ADDRESS, CONF_MODEL, CONF_NAME, Platform
+from homeassistant.helpers.device_registry import async_get as async_get_device_registry
 
-from .const import DOMAIN
+
+from .const import DOMAIN, DEVICE_SCHEMA, CONFIG_SCHEMA
 
 from .govee_controller import GoveeBluetoothController
 
@@ -19,24 +20,26 @@ PLATFORMS: list[Platform] = [
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up Govee devices configured through configuration.yaml."""
-    if DOMAIN not in config:
+
+    govee_config = config.get(DOMAIN)
+
+    if not govee_config:
         return True
 
-    configured_addresses = [entry.data['address'] for entry in hass.config_entries.async_entries(DOMAIN)]
+    devices = govee_config.get('devices', [])
 
-    for device_config in config[DOMAIN].get('devices', []):
+    for device_config in devices:
         address = device_config[CONF_ADDRESS]
-
-        # Skip already configured devices
-        if address in configured_addresses:
-            continue
+        model = device_config.get(CONF_MODEL)
+        name = device_config.get(CONF_NAME)
+        area = device_config.get('area')
 
         # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
         hass.async_create_task(
             hass.config_entries.flow.async_init(
                 DOMAIN,
                 context={'source': SOURCE_IMPORT},
-                data=device_config
+                data={'address': address, 'model': model, 'name': name, 'area': area}
             )
         )
 
@@ -69,13 +72,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if not ble_device:
         raise ConfigEntryNotReady(f"Could not find LED BLE device with address {address}")
 
-    device_registry = async_get(hass)
+    device_registry = async_get_device_registry(hass)
     hub_device = device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, "controller")},
         name="Govee Controller",
         manufacturer="AznDibs",
     )
+
     # Store BLE device and other relevant info in hass.data for use in the platform setup.
     hass.data[DOMAIN][entry.entry_id] = {
         "ble_device": ble_device,

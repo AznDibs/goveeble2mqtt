@@ -6,6 +6,8 @@ from homeassistant.config_entries import ConfigFlow
 from homeassistant.const import CONF_ADDRESS, CONF_MODEL, CONF_NAME
 from homeassistant.components.bluetooth import BluetoothServiceInfoBleak, async_discovered_service_info
 from homeassistant.data_entry_flow import FlowResult
+from homeassistant.helpers import area_registry
+
 
 from .const import DOMAIN
 from .models import ModelInfo
@@ -45,9 +47,12 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
             model = user_input[CONF_MODEL]
             # Handle custom name input
             custom_name = user_input.get(CONF_NAME, title)
+            area = user_input.get("area")
             return self.async_create_entry(title=title, data={
+                CONF_ADDRESS: discovery_info.address,
                 CONF_MODEL: model,
                 CONF_NAME: custom_name,
+                "area": area,
             })
 
         self._set_confirm_only()
@@ -61,7 +66,7 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
             description_placeholders=placeholders,
             data_schema=vol.Schema({
                 vol.Required(CONF_MODEL): vol.In(self._available_models),
-                vol.Optional(CONF_NAME, default=title): str, # Allow user to overwrite the name
+                vol.Required(CONF_NAME, title): str, # Allow user to overwrite the name
             })
         )
 
@@ -76,13 +81,16 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
             address = user_input[CONF_ADDRESS]
             model = user_input[CONF_MODEL]
             custom_name = user_input.get(CONF_NAME, self._discovered_devices[address])  # Use provided name or default to discovered name
+            area = user_input.get("area")
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
             # Handle custom name input
             return self.async_create_entry(
                 title=custom_name, data={
+                    CONF_ADDRESS: address,
                     CONF_MODEL: model,
                     CONF_NAME: custom_name,  # Save the custom name
+                    "area": area,
                 }
             )
 
@@ -113,6 +121,7 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
         await self.async_set_unique_id(address)
         self._abort_if_unique_id_configured()
 
+
         # Check if this address is already configured
         existing_entry = await self.async_set_unique_id(address)
         if existing_entry:
@@ -121,6 +130,7 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
         # Extract the model and name from the import data, applying defaults if necessary
         model = import_data.get(CONF_MODEL, "default_model")
         name = import_data.get(CONF_NAME, f"Govee Light {address}")
+        area = import_data.get("area")
 
         # Proceed to create the entry with the imported data
         return self.async_create_entry(
@@ -129,5 +139,6 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
                 CONF_ADDRESS: address,
                 CONF_MODEL: model,
                 CONF_NAME: name,
+                "area": area,
             }
         )
