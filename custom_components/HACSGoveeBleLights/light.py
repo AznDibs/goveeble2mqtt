@@ -23,8 +23,6 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.util.color import value_to_brightness
 from homeassistant.util.color import brightness_to_value
-from homeassistant.helpers.area_registry import async_get as async_get_area_registry
-from homeassistant.helpers.device_registry import async_get as async_get_device_registry
 
 from .const import DOMAIN
 from .models import LedCommand, LedMode, ModelInfo
@@ -51,26 +49,6 @@ async def async_setup_entry(
     address = hass.data[DOMAIN][entry.entry_id]['address']
 
     light = hass.data[DOMAIN][entry.entry_id]
-
-    area_registry = async_get_area_registry(hass)
-    area_name = entry.data.get('area')
-
-    if area_name:
-        # Look for an existing area with the given name
-        area = next((area for area in area_registry.async_list_areas() if area.name == area_name), None)
-
-        # If the area doesn't exist, you can choose to create it (optional)
-        # area = area_registry.async_create(area_name)
-
-        if area:
-            # Now you have an area, ensure the device is associated with it
-            device_registry = await async_get_device_registry(hass)
-            device = device_registry.async_get_device(identifiers={(DOMAIN, address)})
-
-            if device:
-                # Update the device to be associated with the found or created area
-                device_registry.async_update_device(device.id, area_id=area.id)
-
     #bluetooth setup
     # ble_device = bluetooth.async_ble_device_from_address(hass, light.address.upper(), False)
 
