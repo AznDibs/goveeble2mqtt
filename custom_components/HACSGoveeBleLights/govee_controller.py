@@ -1,6 +1,7 @@
 """Controller for Govee BLE lights."""
 
 from __future__ import annotations
+from collections import deque
 import homeassistant.util.dt as dt_util
 from homeassistant.core import HomeAssistant
 import bleak_retry_connector
@@ -37,7 +38,7 @@ class GoveeBluetoothController:
 
         # type: asyncio.Queue[GoveeBleLight]
         # Queued tasks
-        self._queued_lights = asyncio.Queue(self._MAX_QUEUE_SIZE)
+        self._queued_lights= deque([])#asyncio.Queue[any] = asyncio.Queue(self._MAX_QUEUE_SIZE)
 
 
         # type: set[GoveeBleLight]
@@ -101,7 +102,7 @@ class GoveeBluetoothController:
 
                 if len(self._active_tasks) >= self._PARALLEL_UPDATES:
                     _LOGGER.debug("Max active tasks reached, queueing light update")
-                    await self._queued_lights.put(light)
+                    self._queued_lights.append(light) # await self._queued_lights.put(light)
                 else:
                     _LOGGER.debug("Adding light update task to active tasks")
                     task = self._hass.async_create_task(self._async_process_light_update(light))
@@ -128,10 +129,10 @@ class GoveeBluetoothController:
        # Process the task queue if not already at capacity
         try:
             async with self._lock:
-                if len(self._active_tasks) < self._PARALLEL_UPDATES and not self._queued_lights.empty():
-                    queued_light = await self._queued_lights.get()
+                if len(self._active_tasks) < self._PARALLEL_UPDATES and not len(self._queued_lights) == 0:
+                    queued_light = self._queued_lights.popleft()
                     _LOGGER.debug("Processing queued light update for %s", queued_light.debug_name)
-                    if queued_light in self._queued_or_processing_lights:
+                    if queued_light not in self._active_lights and queued_light._task is None:
                         task = self._hass.async_create_task(self._async_process_light_update(queued_light))
                         self._active_tasks.add(task)
                         queued_light._task = task
@@ -189,7 +190,7 @@ class GoveeBluetoothController:
         """Handle keep-alive logic for a light."""
         _start_time = dt_util.utcnow()
         while (dt_util.utcnow() - _start_time).total_seconds() < self._KEEP_ALIVE_PACKET_MAX_DURATION:
-            if len(self._active_tasks) >= self._PARALLEL_UPDATES and not self._queued_lights.empty():
+            if len(self._active_tasks) >= self._PARALLEL_UPDATES and not len(self._queued_lights) == 0:
                 break # If the queue is full, don't send keep-alive packets
 
             try:
