@@ -14,6 +14,7 @@ from .light import HACSGoveeBleLight
 import logging
 _LOGGER = logging.getLogger(__name__)
 UUID_CONTROL_CHARACTERISTIC = '00010203-0405-0607-0809-0a0b0c0d2b11'
+PYTHONASYNCIODEBUG = 1
 
 
 
@@ -31,7 +32,7 @@ class GoveeBluetoothController:
         self._MAX_QUEUE_SIZE = 0 # 0 means no limit
         self._PARALLEL_UPDATES = 3 # Number of active tasks to allow at once
         # Existing attributes
-        self._lights = []
+        self._lights = set()
 
         # Task management
         # type: set[GoveeBleLight]
@@ -60,6 +61,7 @@ class GoveeBluetoothController:
     """Queue management logic"""
     async def queue_update(self, light: HACSGoveeBleLight):
         """Queue an update for a light."""
+        _LOGGER.debug("Received update request for %s", light.debug_name)
         async with self._lock:
             if light not in self._queued_or_processing_lights:
                 self._queued_or_processing_lights.add(light)
@@ -109,7 +111,9 @@ class GoveeBluetoothController:
                     task.add_done_callback(on_task_done)
         except Exception as e:
             _LOGGER.error("Error handling task queue: %s", str(e))
-            self._queued_or_processing_lights.remove(light) # Remove light from queue if an error occurs
+            if light in self._queued_or_processing_lights:
+                self._queued_or_processing_lights.remove(light) # Remove light from queue if an error occurs
+                if
 
 
     async def _manage_task_queue(self):

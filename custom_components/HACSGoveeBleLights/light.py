@@ -238,10 +238,9 @@ class HACSGoveeBleLight(LightEntity):
     async def async_turn_on(self, **kwargs) -> None:
         """Turn the light on."""
         _LOGGER.debug(
-            "async turn on %s %s with %s",
+            "async turn on %s %s",
             self.name,
             self.model,
-            kwargs,
         )
 
         self._mark_dirty("state", True)
