@@ -5,7 +5,6 @@ from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.const import CONF_ADDRESS, CONF_MODEL, CONF_NAME, Platform
-import yaml
 from .const import DOMAIN
 from .govee_controller import GoveeBluetoothController
 import logging
@@ -39,7 +38,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                     data={'address': address, 'model': model, 'name': name, 'area': area}
                 )
             )
-    except FileNotFoundError:
+    except KeyError:
         _LOGGER.error("No configuration file found")
         return False
 
