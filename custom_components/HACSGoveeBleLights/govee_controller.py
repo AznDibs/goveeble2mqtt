@@ -113,7 +113,6 @@ class GoveeBluetoothController:
             _LOGGER.error("Error handling task queue: %s", str(e))
             if light in self._queued_or_processing_lights:
                 self._queued_or_processing_lights.remove(light) # Remove light from queue if an error occurs
-                if
 
 
     async def _manage_task_queue(self):
