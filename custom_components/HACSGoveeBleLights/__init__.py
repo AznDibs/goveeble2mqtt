@@ -40,7 +40,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
                 )
             )
     except FileNotFoundError:
-        _LOGGER.error(f"File {path} not found")
+        _LOGGER.error("No configuration file found")
         return False
 
 
