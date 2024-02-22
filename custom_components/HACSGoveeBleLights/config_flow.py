@@ -90,7 +90,6 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
             await self.async_set_unique_id(address, raise_on_progress=False)
             self._abort_if_unique_id_configured()
             # Handle custom name input
-            title = custom_name or "Default Govee Device"
             return self.async_create_entry(
                 title=custom_name, data={
                     CONF_ADDRESS: address,
@@ -127,12 +126,6 @@ class GoveeConfigFlow(ConfigFlow, domain=DOMAIN):
         # Use the address as a unique ID for this device
         await self.async_set_unique_id(address)
         self._abort_if_unique_id_configured()
-
-
-        # Check if this address is already configured
-        existing_entry = await self.async_set_unique_id(address)
-        if existing_entry:
-            return self.async_abort(reason="already_configured")
 
         # Extract the model and name from the import data, applying defaults if necessary
         model = import_data.get(CONF_MODEL, "default_model")
