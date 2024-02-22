@@ -55,7 +55,7 @@ class GoveeBluetoothController:
 
     def register_light(self, light: HACSGoveeBleLight):
         """Register a light entity with the controller."""
-        self._lights.append(light)
+        self._lights.add(light)  # .append(light)
 
 
     """Queue management logic"""
