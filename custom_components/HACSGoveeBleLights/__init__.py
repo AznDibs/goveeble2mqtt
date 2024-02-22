@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+_LOGGER = logging.getLogger(__name__)
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry, SOURCE_IMPORT
 from homeassistant.core import HomeAssistant
@@ -7,6 +9,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.const import CONF_ADDRESS, CONF_MODEL, CONF_NAME, Platform
 from homeassistant.helpers.device_registry import async_get as async_get_device_registry
 
+import yaml
 
 from .const import DOMAIN, DEVICE_SCHEMA, CONFIG_SCHEMA
 
@@ -27,22 +30,43 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     if not govee_config:
         return True
 
-    devices = govee_config.get('devices', [])
+    config_file = govee_config.get('config_file')
 
-    for device_config in devices:
-        address = device_config[CONF_ADDRESS]
-        model = device_config.get(CONF_MODEL)
-        name = device_config.get(CONF_NAME)
-        area = device_config.get('area')
+    if config_file:
+        path = hass.config.path(config_file)
+        try:
+            with open(path, 'r') as file:
+                device_config = yaml.safe_load(file)
+                devices = device_config.get('devices', [])
 
-        # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
-        hass.async_create_task(
-            hass.config_entries.flow.async_init(
-                DOMAIN,
-                context={'source': SOURCE_IMPORT},
-                data={'address': address, 'model': model, 'name': name, 'area': area}
-            )
-        )
+                for device in devices:
+                    address = device_config[CONF_ADDRESS]
+                    model = device_config.get(CONF_MODEL)
+                    name = device_config.get(CONF_NAME)
+                    area = device_config.get('area')
+
+                    # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
+                    hass.async_create_task(
+                        hass.config_entries.flow.async_init(
+                            DOMAIN,
+                            context={'source': SOURCE_IMPORT},
+                            data={'address': address, 'model': model, 'name': name, 'area': area}
+                        )
+                    )
+
+                    # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
+                    hass.async_create_task(
+                        hass.config_entries.flow.async_init(
+                            DOMAIN,
+                            context={'source': SOURCE_IMPORT},
+                            data={'address': address, 'model': model, 'name': name, 'area': area}
+                        )
+                    )
+        except FileNotFoundError:
+            _LOGGER.error(f"File {path} not found")
+            return False
+
+
 
     return True
 
