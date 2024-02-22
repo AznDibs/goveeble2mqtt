@@ -21,37 +21,27 @@ PLATFORMS: list[Platform] = [
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up Govee devices configured through configuration.yaml."""
 
-    govee_config = config.get(DOMAIN)
+    try:
+        device_config = config[DOMAIN]
+        devices = device_config.get('devices', [])
 
-    if not govee_config:
-        return True
+        for _device in devices:
+            address = device_config.get(CONF_ADDRESS)
+            model = device_config.get(CONF_MODEL)
+            name = device_config.get(CONF_NAME)
+            area = device_config.get('area')
 
-    config_file = govee_config.get('config_file')
-
-    if config_file:
-        path = hass.config.path(config_file)
-        try:
-            with open(path) as file:
-                device_config = yaml.safe_load(file)
-                devices = device_config.get('devices', [])
-
-                for _device in devices:
-                    address = device_config[CONF_ADDRESS]
-                    model = device_config.get(CONF_MODEL)
-                    name = device_config.get(CONF_NAME)
-                    area = device_config.get('area')
-
-                    # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
-                    hass.async_create_task(
-                        hass.config_entries.flow.async_init(
-                            DOMAIN,
-                            context={'source': SOURCE_IMPORT},
-                            data={'address': address, 'model': model, 'name': name, 'area': area}
-                        )
-                    )
-        except FileNotFoundError:
-            _LOGGER.error(f"File {path} not found")
-            return False
+            # Create a new config entry. This doesn't set up the device yet; it schedules setup via async_setup_entry
+            hass.async_create_task(
+                hass.config_entries.flow.async_init(
+                    DOMAIN,
+                    context={'source': SOURCE_IMPORT},
+                    data={'address': address, 'model': model, 'name': name, 'area': area}
+                )
+            )
+    except FileNotFoundError:
+        _LOGGER.error(f"File {path} not found")
+        return False
 
 
 
