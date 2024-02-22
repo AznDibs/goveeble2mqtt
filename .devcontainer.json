@@ -1,6 +1,6 @@
 {
     "name": "AznDibs/HACSGoveeBleLights",
-    "image": "mcr.microsoft.com/devcontainers/python:3.11-bookworm",
+    "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [
         8123
