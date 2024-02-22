@@ -15,3 +15,7 @@ coverage.xml
 # Home Assistant configuration
 config/*
 !config/configuration.yaml
+
+__pycache__
+
+_*.txt

@@ -1,0 +1,37 @@
+{
+  "domain": "HACSGoveeBleLights",
+  "name": "HACS Govee Ble Lights",
+  "integration_type": "hub",
+  "bluetooth": [
+    {
+      "local_name": "ihoment_*",
+      "connectable": false
+    },
+    {
+      "local_name": "Govee_*",
+      "connectable": false
+    },
+    {
+      "local_name": "H6072*",
+      "connectable": false
+    },
+    {
+      "service_uuid": "00010203-0405-0607-0809-0a0b0c0d2b11",
+      "connectable": false
+    }
+  ],
+  "codeowners": [
+    "@AznDibs"
+  ],
+  "requirements": [
+    "bleak-retry-connector"
+  ],
+  "dependencies": [
+    "bluetooth"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/AznDibs/HACSGoveeBleLights",
+  "iot_class": "assumed_state",
+  "issue_tracker": "https://github.com/AznDibs/HACSGoveeBleLights/issues",
+  "version": "0.0.1"
+}
