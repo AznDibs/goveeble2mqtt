@@ -4,8 +4,6 @@ import asyncio
 import logging
 import random
 
-from custom_components.HACSGoveeBleLights.govee_controller import GoveeBluetoothController
-
 _LOGGER = logging.getLogger(__name__)
 
 import time
@@ -87,7 +85,7 @@ class HACSGoveeBleLight(LightEntity):
             address,
             ble_device: BLEDevice,
             config_entry: ConfigEntry,
-            controller: GoveeBluetoothController,
+            controller,
             hub_device,
             ) -> None:
         """Initialize an bluetooth light."""
