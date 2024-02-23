@@ -7,7 +7,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.const import Platform
 from .const import DOMAIN
 from .govee_controller import GoveeBluetoothController
-from .govee_ble_light import GoveeBleLight
+from .govee_ble_light import Client
 from .govee2mqtt import Govee2Mqtt
 
 import logging
