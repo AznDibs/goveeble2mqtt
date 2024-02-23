@@ -1,4 +1,4 @@
-"""The HACS Govee BLE Lights integration."""
+"""The Govee BLE2MQTT integration."""
 from __future__ import annotations
 from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
@@ -7,6 +7,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.const import Platform
 from .const import DOMAIN
 from .govee_controller import GoveeBluetoothController
+from .govee2mqtt import Govee2Mqtt
 import logging
 _LOGGER = logging.getLogger(__name__)
 
@@ -17,50 +18,18 @@ PLATFORMS: list[Platform] = [
     Platform.LIGHT,
 ]
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up Govee BLE device from a config entry.
 
-    Args:
-        hass (HomeAssistant): The Home Assistant instance.
-        entry (ConfigEntry): The config entry representing the Govee BLE device.
-
-    Returns:
-        bool: True if the setup was successful, False otherwise.
-    """
-    address = entry.unique_id
-    assert address is not None
-
-    # Initialize or retrieve the shared controller.
-    if 'controller' not in hass.data.get(DOMAIN, {}):
-        hass.data.setdefault(DOMAIN, {})['controller'] = GoveeBluetoothController(hass, address)
-
-    controller = hass.data[DOMAIN]['controller']
-
-    # controller = hass.data[DOMAIN]["controller"]
-
-    # Use the Bluetooth API to get the BLE device object
-    ble_device = bluetooth.async_ble_device_from_address(hass, address.upper(), True)
-    if not ble_device:
-        raise ConfigEntryNotReady(f"Could not find LED BLE device with address {address}")
-
-
-    # Store BLE device and other relevant info in hass.data for use in the platform setup.
-    hass.data[DOMAIN][entry.entry_id] = {
-        "ble_device": ble_device,
-        "address": address,
-        "controller": controller,  # Store the controller for use in platform setup.
-    }
-
-
-    await hass.config_entries.async_forward_entry_setup(entry, 'light')
+async def async_setup(hass: HomeAssistant, config: dict) -> bool:
+    """Set up the Govee BLE Lights component."""
+    main = Govee2Mqtt()
+    hass.data[DOMAIN] = main
+    hass.async_create_task(main.async_start(hass))
 
     return True
 
-
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    if unload_ok:
-        hass.data[DOMAIN].pop(entry.entry_id)
+    main = hass.data[DOMAIN]
+    await main.async_stop()
 
-    return unload_ok
+    return True

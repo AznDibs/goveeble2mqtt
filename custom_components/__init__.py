@@ -1,1 +1,1 @@
-"""HACS Govee Ble Lights."""
+"""Govee BLE2MQTT."""

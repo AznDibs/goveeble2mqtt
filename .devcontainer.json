@@ -1,5 +1,5 @@
 {
-    "name": "AznDibs/HACSGoveeBleLights",
+    "name": "AznDibs/goveeble2mqtt",
     "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
     "postCreateCommand": "scripts/setup",
     "forwardPorts": [

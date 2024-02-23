@@ -32,11 +32,11 @@ class ModelInfo:
     """Class to store information about different models of lights."""
 
     MODELS = {
-        "default": [LedMode.MODE_2, 255],
-        "H6008": [LedMode.MODE_D, 245],
+        "H6008": [LedMode.MODE_D, 100],
         "H6046": [LedMode.MODE_1501, 100],
         "H6072": [LedMode.MODE_1501, 100],
         "H6076": [LedMode.MODE_1501, 100],
+        "default": [LedMode.MODE_2, 255],
     }
 
     @staticmethod

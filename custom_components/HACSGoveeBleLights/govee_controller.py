@@ -8,16 +8,27 @@ import bleak_retry_connector
 import asyncio
 from bleak import BleakClient
 import random
-
-
+import json
+import paho.mqtt.client as mqtt
+import sys
+import getopt
+import time
+import signal
 from .light import HACSGoveeBleLight
-
 import logging
 _LOGGER = logging.getLogger(__name__)
+
 UUID_CONTROL_CHARACTERISTIC = '00010203-0405-0607-0809-0a0b0c0d2b11'
 PYTHONASYNCIODEBUG = 1
 
+MQTT_SERVER: str = "";
+MQTT_PORT: int = 1883;
+MQTT_USER: str = "";
+MQTT_PASS: str = "";
 
+CLIENTS = {};
+MESSAGE_QUEUE = [];
+RUNNING = True;
 
 class GoveeBluetoothController:
     """Controller for Govee BLE lights."""
@@ -162,16 +173,19 @@ class GoveeBluetoothController:
                     result = await self._async_send_data(light, cmd, payload)
                     if result:
                         light.mark_clean("state")
+                    await asyncio.sleep(0.1)
                 elif light._dirty_brightness:
                     cmd, payload = light.get_brightness_payload()
                     result = await self._async_send_data(light, cmd, payload)
                     if result:
                         light.mark_clean("brightness")
+                    await asyncio.sleep(0.1)
                 elif light._dirty_rgb_color:
                     cmd, payload = light.get_rgb_color_payload()
                     result = await self._async_send_data(light, cmd, payload)
                     if result:
                         light.mark_clean("rgb_color")
+                    await asyncio.sleep(0.1)
                 else: # No updates needed
                     attempt = 0
                     light.set_state_attr("send_packet_attempts", attempt)

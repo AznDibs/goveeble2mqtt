@@ -1,10 +1,10 @@
-"""Constants for the HACS Govee BLE Lights integration."""
+"""Constants for the Govee BLE2MQTT integration."""
 import voluptuous as vol
 from homeassistant.helpers import config_validation as cv
 from homeassistant.const import CONF_ADDRESS, CONF_NAME, CONF_MODEL
 
-NAME = "HACS Govee Ble Lights"
-DOMAIN = "HACSGoveeBleLights"
+NAME = "Govee BLE2MQTT"
+DOMAIN = "goveeble2mqtt"
 
 DEVICE_SCHEMA = vol.Schema({
     vol.Required(CONF_ADDRESS): cv.string,

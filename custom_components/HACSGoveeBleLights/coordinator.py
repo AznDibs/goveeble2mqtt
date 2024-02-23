@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for HACSGoveeBleLights."""
+"""DataUpdateCoordinator for goveeble2mqtt."""
 from __future__ import annotations
 
 from datetime import timedelta
