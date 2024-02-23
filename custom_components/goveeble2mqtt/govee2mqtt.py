@@ -3,7 +3,7 @@ import asyncio
 import json
 import paho.mqtt.client as mqtt
 import logging
-from .govee_ble_light import GoveeBleLight;
+from .govee_ble_light import Client;
 import sys
 import getopt
 import time
@@ -117,7 +117,7 @@ class Govee2Mqtt:
 
             if device_id not in CLIENTS:
                 _LOGGER.info("Creating new device: " + device_id);
-                CLIENTS[device_id] = GoveeBleLight.Client(self._hass, device_id, model, mqttclient, topic);
+                CLIENTS[device_id] = Client(self._hass, device_id, model, mqttclient, topic);
                 asyncio.sleep(2);
 
             _device = CLIENTS[device_id];
