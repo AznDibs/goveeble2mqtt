@@ -12,7 +12,7 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__);
 
-MQTT_SERVER: str = "homeassistant";
+MQTT_SERVER: str = "core-mosquitto";
 MQTT_PORT: int = 1883;
 MQTT_USER: str = None;
 MQTT_PASSWORD: str = None;
@@ -27,6 +27,16 @@ class Govee2Mqtt:
     def __init__(self, hass):
         """Initialize."""
         self._hass = hass;
+
+        global MQTT_SERVER;
+        global MQTT_PORT;
+        global MQTT_USER;
+        global MQTT_PASSWORD;
+
+        MQTT_SERVER = hass.data[DOMAIN]["mqtt_ip"];
+        MQTT_PORT = hass.data[DOMAIN]["mqtt_port"];
+        MQTT_USER = hass.data[DOMAIN]["mqtt_user"];
+        MQTT_PASSWORD = hass.data[DOMAIN]["mqtt_password"];
 
     async def async_start(self):
         """Start."""

@@ -8,22 +8,32 @@ from homeassistant.const import Platform
 from .const import DOMAIN
 from .govee_controller import GoveeBluetoothController
 from .govee2mqtt import Govee2Mqtt
+
 import logging
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [
-    Platform.SENSOR,
-    Platform.BINARY_SENSOR,
-    Platform.SWITCH,
-    Platform.LIGHT,
-]
+
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up the Govee BLE Lights component."""
-    main = Govee2Mqtt()
-    hass.data[DOMAIN] = main
-    hass.async_create_task(main.async_start(hass))
+    if DOMAIN not in config:
+        return True
+
+    mqtt_ip = config[DOMAIN].get("mqtt_ip")
+    mqtt_port = config[DOMAIN].get("mqtt_port")
+    mqtt_user = config[DOMAIN].get("mqtt_user")
+    mqtt_password = config[DOMAIN].get("mqtt_password")
+
+    hass.data[DOMAIN] = {
+        "mqtt_ip": mqtt_ip,
+        "mqtt_port": mqtt_port,
+        "mqtt_user": mqtt_user,
+        "mqtt_password": mqtt_password,
+    }
+
+    main = Govee2Mqtt(hass)
+    hass.async_create_task(main.async_start())
 
     return True
 
