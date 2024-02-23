@@ -36,7 +36,8 @@ class ModelInfo:
         "H6046": [LedMode.MODE_1501, 100],
         "H6072": [LedMode.MODE_1501, 100],
         "H6076": [LedMode.MODE_1501, 100],
-        "default": [LedMode.MODE_2, 255],
+        "default": [LedMode.MODE_D, 100],
+        "MODE2": [LedMode.MODE_2, 255],
     }
 
     @staticmethod
